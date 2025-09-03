@@ -439,7 +439,7 @@ async function obtenerClima() {
                 
                 htmlClima += `
                     <div class="ciudad-clima">
-                        <span class="nombre-ciudad">${ciudad}:</span>
+const respuesta = await fetch(`https://corsproxy.io/?https://api.openweathermap.org/data/2.5/weather?q=${ciudad}&appid=68bee88aefd1936ea35059361fd5c934&units=metric&lang=es`);
                         <span class="temperatura">${temp}°C</span>
                         <span class="descripcion-clima">${icono} ${descripcion}</span>
                     </div>
