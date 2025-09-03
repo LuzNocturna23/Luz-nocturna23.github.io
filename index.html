@@ -365,3 +365,134 @@
     </script>
 </body>
 </html>
+
+<!-- Sección de Clima -->
+<div class="card">
+    <h2>Clima Mundial</h2>
+    <div class="clima-container" id="clima-container">
+        <p>Cargando datos del clima...</p>
+    </div>
+    
+    <div class="tip">
+        <strong>💡 Actualización automática:</strong> Los datos se actualizan cada 10 minutos.
+    </div>
+</div>
+.clima-container {
+    margin-top: 15px;
+}
+
+.ciudad-clima {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.dark-mode .ciudad-clima {
+    border-bottom: 1px solid #444;
+}
+
+.temperatura {
+    font-weight: bold;
+    color: #b21f1f;
+}
+
+.dark-mode .temperatura {
+    color: #ff6b6b;
+}
+
+.descripcion-clima {
+    font-style: italic;
+    color: #666;
+}
+
+.dark-mode .descripcion-clima {
+    color: #aaa;
+}
+
+.actualizando {
+    text-align: center;
+    padding: 10px;
+    font-style: italic;
+    color: #666;
+}
+// Función para obtener el clima
+async function obtenerClima() {
+    const ciudades = ["Berlin", "London", "New York", "Paris", "Moscow", "Madrid", "Tokyo"];
+    const contenedorClima = document.getElementById('clima-container');
+    
+    // Mostrar mensaje de actualización
+    contenedorClima.innerHTML = '<div class="actualizando"><i class="fas fa-sync fa-spin"></i> Actualizando clima...</div>';
+    
+    try {
+        let htmlClima = '';
+        
+        for (const ciudad of ciudades) {
+            // Hacer la petición a la API
+            const respuesta = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${ciudad}&appid=68bee88aefd1936ea35059361fd5c934&units=metric&lang=es`);
+            const datos = await respuesta.json();
+            
+            if (datos.cod === 200) {
+                const temp = datos.main.temp.toFixed(1);
+                const descripcion = datos.weather[0].description;
+                const icono = obtenerIconoClima(datos.weather[0].main);
+                
+                htmlClima += `
+                    <div class="ciudad-clima">
+                        <span class="nombre-ciudad">${ciudad}:</span>
+                        <span class="temperatura">${temp}°C</span>
+                        <span class="descripcion-clima">${icono} ${descripcion}</span>
+                    </div>
+                `;
+            } else {
+                htmlClima += `
+                    <div class="ciudad-clima">
+                        <span class="nombre-ciudad">${ciudad}:</span>
+                        <span class="descripcion-clima">No disponible</span>
+                    </div>
+                `;
+            }
+            
+            // Pequeña pausa entre ciudades para no saturar la API
+            await new Promise(resolve => setTimeout(resolve, 100));
+        }
+        
+        contenedorClima.innerHTML = htmlClima;
+        
+    } catch (error) {
+        console.error('Error obteniendo el clima:', error);
+        contenedorClima.innerHTML = '<p>Error al cargar los datos del clima. Intenta recargar la página.</p>';
+    }
+}
+
+// Función para obtener iconos según el clima
+function obtenerIconoClima(condicion) {
+    const iconos = {
+        'Clear': '☀️',
+        'Clouds': '☁️',
+        'Rain': '🌧️',
+        'Drizzle': '🌦️',
+        'Thunderstorm': '⛈️',
+        'Snow': '❄️',
+        'Mist': '🌫️',
+        'Smoke': '🌫️',
+        'Haze': '🌫️',
+        'Dust': '🌫️',
+        'Fog': '🌫️',
+        'Sand': '🌫️',
+        'Ash': '🌫️',
+        'Squall': '💨',
+        'Tornado': '🌪️'
+    };
+    
+    return iconos[condicion] || '🌡️';
+}
+
+// Llamar a la función cuando la página cargue
+document.addEventListener('DOMContentLoaded', function() {
+    obtenerClima();
+    
+    // Actualizar cada 10 minutos
+    setInterval(obtenerClima, 10 * 60 * 1000);
+});
+
